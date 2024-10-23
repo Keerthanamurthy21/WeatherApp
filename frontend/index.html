@@ -5,17 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Weather Dashboard</title>
     <style>
-      body {
-        font-family: "Arial", sans-serif;
-        background-color: #f0f8ff;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-      }
-
+       body {
+    font-family: "Arial", sans-serif;
+    background-image: url('./bluesky.jpg'); /* Replace with the actual image URL */
+    background-size: cover; /* Ensures the image covers the entire background */
+    background-position: center; /* Centers the background image */
+    background-repeat: no-repeat; /* Prevents repeating of the background image */
+    background-attachment: fixed; /* Keeps the image fixed when scrolling */
+    background-color: #f0f8ff; /* Fallback color in case the image doesn't load */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* Ensures the body takes up at least 100% of the viewport height */
+  }
       .container {
         max-width: 800px;
         padding: 20px;
@@ -36,19 +41,45 @@
       }
 
       .weather-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px;
-        border-bottom: 1px solid #e0e0e0;
-      }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
 
-      .weather-item:last-child {
-        border-bottom: none;
-      }
+.weather-item p {
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  text-align: left;
+}
 
-      .weather-item p {
-        margin: 5px 0;
-      }
+.weather-item p:nth-child(1) { /* City column */
+  flex-basis: 20%; /* Adjust the width for City */
+}
+
+.weather-item p:nth-child(2), /* Temp column */
+.weather-item p:nth-child(3) { /* Feels like column */
+  flex-basis: 15%; /* Adjust the width for Temp and Feels like */
+  text-align: center;
+}
+
+.weather-item p:nth-child(4) { /* Weather Condition column */
+  flex-basis: 30%; /* Adjust the width for Weather Condition */
+  text-align: left;
+}
+
+.weather-item p:nth-child(5) { /* Date column */
+  flex-basis: 20%; /* Adjust the width for Date */
+  text-align: right;
+}
+
+.weather-item:last-child {
+  border-bottom: none;
+}
+
+    
 
       .footer {
         text-align: center;
@@ -83,13 +114,13 @@
       </div>
 
       <div class="daily-report-section">
-        <h3 class="report-heading">Weather Report</h3>
+        <h3 class="report-heading">Real-Time Weather Updates (Every 5 Minutes)</h3>
         <div id="current-report">
           <!-- Daily report will be dynamically inserted here -->
         </div>
       </div>
       <div class="daily-report-section">
-        <h3 class="report-heading">Daily Weather Aggregated Report</h3>
+        <h3 class="report-heading">Daily Weather Summary</h3>
         <div id="daily-report">
           <!-- Daily report will be dynamically inserted here -->
         </div>
@@ -148,8 +179,8 @@
             currentReportDiv.innerHTML += `
             <div class="weather-item">
               <p><strong>City:</strong> ${item.city}</p>
-              <p><strong>Temp:</strong> ${item.temp}°C</p>
-              <p><strong>feels like:</strong> ${item.feels_like}°C</p>
+              <p><strong>Temp:</strong> ${item.temp.toFixed(2)}°C</p>
+              <p><strong>feels like:</strong> ${item.feels_like.toFixed(2)}°C</p>
               <p><strong>weather Condition</strong> ${
                 item.weatherCondition
               }°C</p>
@@ -188,20 +219,23 @@
           const currentWeather = data[0]; // Assuming the first item is the current weather
 
           // Display daily weather summary (iterate over the rest of the data)
-          data.forEach((item, index) => {
-            reportDiv.innerHTML += `
-          <div class="weather-item">
-  <p><strong>City:</strong> ${item.city}</p>
-  <p><strong>Avg Temp:</strong> ${item.avgTemp}°C</p>
-  <p><strong>Max Temp:</strong> ${item.maxTemp}°C</p>
-  <p><strong>Dominant Weather:</strong> ${item.dominantWeather}</p>
-  <p><strong>Date:</strong> ${new Date(
-    item.date * 1000
-  ).toLocaleDateString()}</p>
-</div>
+          data.forEach((item) => {
+            console.log(item.dominantWeather,"ccccc")
+  // Only add the weather-item div if Dominant Weather is defined
+  if (item.dominantWeather!="undefined") {
+    reportDiv.innerHTML += `
+      <div class="weather-item">
+        <p><strong>City:</strong> ${item.city}</p>
+        <p><strong>Avg Temp:</strong> ${item.avgTemp.toFixed(2)}°C</p>
+        <p><strong>Max Temp:</strong> ${item.maxTemp.toFixed(2)}°C</p>
+        <p><strong>Dominant Weather:</strong> ${item.dominantWeather}</p>
+        <p><strong>Date:</strong> ${new Date(item.date * 1000).toLocaleDateString()}</p>
+      </div>
+    `;
+  }
+});
 
-          `;
-          });
+
         } catch (error) {
           console.error("Error fetching weather summary:", error);
         }
