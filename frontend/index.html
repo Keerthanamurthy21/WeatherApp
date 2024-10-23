@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Dashboard</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f0f8ff;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container {
+        max-width: 800px;
+        padding: 20px;
+        margin: 20px auto;
+        background-color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+
+      h2 {
+        text-align: center;
+        color: #2e8b57;
+      }
+
+      .weather-section,
+      .daily-report-section {
+        margin-top: 20px;
+      }
+
+      .weather-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .weather-item:last-child {
+        border-bottom: none;
+      }
+
+      .weather-item p {
+        margin: 5px 0;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        color: #555;
+      }
+
+      .city-name {
+        font-weight: bold;
+        color: #0073e6;
+        font-size: 1.2rem;
+      }
+
+      .temperature {
+        color: #ff4500;
+        font-size: 1.1rem;
+      }
+
+      .report-heading {
+        background-color: #0073e6;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Weather Summary</h2>
+      <div id="weather-summary" class="weather-section">
+        <!-- Weather data will be dynamically inserted here -->
+      </div>
+
+      <div class="daily-report-section">
+        <h3 class="report-heading">Weather Report</h3>
+        <div id="current-report">
+          <!-- Daily report will be dynamically inserted here -->
+        </div>
+      </div>
+      <div class="daily-report-section">
+        <h3 class="report-heading">Daily Weather Aggregated Report</h3>
+        <div id="daily-report">
+          <!-- Daily report will be dynamically inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>&copy; 2024 Weather Dashboard</p>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchWeatherSummary();
+        fetchDailySummary();
+        setInterval(fetchWeatherSummary, 5 * 60 * 1000); // Fetch every 5 minutes
+      });
+
+      const fetchWeatherSummary = async () => {
+        try {
+          const response = await fetch(
+            "http://localhost:3000/api/weather-summary"
+          );
+          console.log("Response Status:", response.status); // Log the response status
+
+          if (!response.ok) {
+            // Check if the response is OK (status 200-299)
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          // Log the data received
+
+          const currentSummaryDiv = document.getElementById("weather-summary");
+          const currentReportDiv = document.getElementById("current-report");
+
+          // Clear previous content
+          currentSummaryDiv.innerHTML = "";
+          currentReportDiv.innerHTML = "";
+
+          // Display current weather (show the first city only for "current" weather)
+          const currentWeather = data[0]; // Assuming the first item is the current weather
+          if (currentWeather) {
+            currentSummaryDiv.innerHTML += `
+          
+            <p><strong>Weather:</strong> <span class="temperature"> ${currentWeather.feels_like.toFixed(
+              2
+            )}</span></p>
+            <p><strong>Last Updated:</strong> ${new Date(
+              currentWeather.timestamp * 1000
+            ).toLocaleString()}</p>
+          `;
+          }
+
+          // Display daily weather summary (iterate over the rest of the data)
+          data.forEach((item, index) => {
+            currentReportDiv.innerHTML += `
+            <div class="weather-item">
+              <p><strong>City:</strong> ${item.city}</p>
+              <p><strong>Temp:</strong> ${item.temp}°C</p>
+              <p><strong>feels like:</strong> ${item.feels_like}°C</p>
+              <p><strong>weather Condition</strong> ${
+                item.weatherCondition
+              }°C</p>
+               <p><strong>Date:</strong> ${new Date(
+                 item.timestamp * 1000
+               ).toLocaleDateString()}</p>
+            </div>
+          `;
+          });
+        } catch (error) {
+          console.error("Error fetching weather summary:", error);
+        }
+      };
+      const fetchDailySummary = async () => {
+        try {
+          const response = await fetch(
+            "http://localhost:3000/api/weather-dailysummary"
+          );
+          console.log("Response Status:", response.status); // Log the response status
+
+          if (!response.ok) {
+            // Check if the response is OK (status 200-299)
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log("Weather Summary Data:", data); // Log the data received
+
+          const reportDiv = document.getElementById("daily-report");
+
+          // Clear previous content
+
+          reportDiv.innerHTML = "";
+
+          // Display current weather (show the first city only for "current" weather)
+          const currentWeather = data[0]; // Assuming the first item is the current weather
+
+          // Display daily weather summary (iterate over the rest of the data)
+          data.forEach((item, index) => {
+            reportDiv.innerHTML += `
+          <div class="weather-item">
+  <p><strong>City:</strong> ${item.city}</p>
+  <p><strong>Avg Temp:</strong> ${item.avgTemp}°C</p>
+  <p><strong>Max Temp:</strong> ${item.maxTemp}°C</p>
+  <p><strong>Dominant Weather:</strong> ${item.dominantWeather}</p>
+  <p><strong>Date:</strong> ${new Date(
+    item.date * 1000
+  ).toLocaleDateString()}</p>
+</div>
+
+          `;
+          });
+        } catch (error) {
+          console.error("Error fetching weather summary:", error);
+        }
+      };
+    </script>
+  </body>
+</html>
